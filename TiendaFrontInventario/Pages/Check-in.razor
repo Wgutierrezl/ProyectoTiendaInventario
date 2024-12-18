@@ -11,69 +11,193 @@
     </head>
     <body>
         <h1 class="H1">Facturacion</h1>
+
+        <div class="Container2">
         <p>Que deseas hacer:</p>
-        <select id="Operacion" @bind="Order.TipoOrden">
+        <select id="Operacion" @bind="OperacionRealizada">
             <option value="Compra">Compra</option>
             <option value="Venta">Venta</option>
         </select>
-        <button @onclick="PostOrdenes">Iniciar Facturacion</button>
-        @if(SuccessPost!=false)
+        <button @onclick="IniciarFac">Iniciar Facturacion</button>
+        @if (listaO != null)
         {
-        <p>Codigo de Facturacion:@CodOrder</p>
+            <p>Codigo de Facturacion:@CodOrder</p>
+            <p>Lo que vas a hacer:@OperacionRealizada</p>
+            <hr />
+            <div class="Container2">
+                <p>Registrar Producto:</p>
+                <button @onclick="GetProducts">Comenzar</button>
+                @if(listap!=null)
+                {
+                    <p>¿Cual deseas Registrar</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ProductID</th>
+                                <th>ProductName</th>
+                                <th>Description</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Productos item in listap)
+                            {
+                                <tr @onclick="() => SelectProduct(item)">
+                                    <td>@item.CodigoProducto</td>
+                                    <td>@item.NombreProducto</td>
+                                    <td>@item.Descripcion</td>
+                                    <td>@item.Stock</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>   
+                }
+                else
+                {
+                    <p>Error:@MessageProducts</p>
+                    
+                }
+
+                @if (CodigoSeleccionado != null)
+                {
+                    <p>Codigo del Producto Seleccionado:@CodigoSeleccionado</p>
+                }
+                else
+                {
+                    <p>No se ha Seleccionado nada</p>
+                }
+            </div>
 
         }
         else
         {
-            <p>Error:@MessagePost</p>
-        
+            <p>"Error:"@MessageGetOrders</p>
+
         }
+        </div>
+        
+
 
     </body>
     </html>
 
 
 @code {
-    public bool mostrar = false;
-    protected void MostrarFormulario()
-    {
-        mostrar = true;
-    }
 
-    //Post Ordenes
+
+    //Post Ordenes para mas adelante
     public Ordenes Order { get; set; } = new Ordenes();
-    public bool SuccessPost = false;
-    public string? MessagePost { get; set; }
-    public int CodOrder { get; set; }
+    public bool SuccessPostOrders = false;
+    public string? MessagePostOrders { get; set; }
     protected async Task PostOrdenes()
     {
 
         try
         {
-            Order.TipoOrden = "---";
-            Order.FechaOrden = DateTime.Now;
-            Order.Total = 0;
             string url = "https://localhost:7263/api/Ordenes";
             var response = await ServiciosOrdenes.PostOrdenes<Ordenes>(url, Order);
             if(!response.Error)
             {
-                SuccessPost = true;
-                MessagePost = String.Empty;
-                CodOrder = Order.OrderID;
+                SuccessPostOrders = true;
+                MessagePostOrders = String.Empty;
+
             }
             else
             {
-                SuccessPost = false;
-                MessagePost = await response.GetErrorMessageAsync();
-                CodOrder = 0;
+                SuccessPostOrders = false;
+                MessagePostOrders = await response.GetErrorMessageAsync();
+
             }
 
         }catch (Exception e)
         {
-            SuccessPost = false;
-            MessagePost = "Error:" + e.Message;
-            CodOrder = 0;
+            SuccessPostOrders = false;
+            MessagePostOrders = "Error:" + e.Message;
 
         }
+    }
+
+
+
+    //Probando el Acceso
+    public List<Ordenes>? listaO { get; set; }
+    public int CodOrder { get; set; }
+    public string? OperacionRealizada { get; set; }
+    public bool Accion = false;
+    public string? MessageGetOrders { get; set; }
+    protected async void IniciarFac()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.GetOrdenes<List<Ordenes>>(url);
+            if(!response.Error)
+            {
+                listaO = response.Response;
+                var posicion = listaO?.LastOrDefault();
+                CodOrder = posicion.OrderID;
+                CodOrder++;
+                Accion = true;
+                MessageGetOrders = String.Empty;
+
+            }
+            else
+            {
+                listaO = null;
+                MessageGetOrders = await response.GetErrorMessageAsync();
+                CodOrder = -1;
+
+
+            }
+
+
+        }catch (Exception e)
+        {
+            listaO = null;
+            MessageGetOrders = "Error:" + e.Message;
+            CodOrder = -1;
+
+        }
+
+    }
+
+    //Metodo para Traer Productos
+    public List<Productos>? listap { get; set; }
+    public string? MessageProducts { get; set; }
+    protected async Task GetProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos";
+            var response = await ServiciosProductos.GetProductos<List<Productos>>(url);
+            if (!response.Error)
+            {
+                listap = response.Response;
+                MessageProducts= String.Empty;
+            }
+            else
+            {
+                listap = null;
+                MessageProducts = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            listap = null;
+            MessageProducts = "Error:" + e.Message;
+
+        }
+
+    }
+
+
+    //Metodo para seleccionar el id o codigo del producto en el cual se encuentra parado el usuario
+    public int CodigoSeleccionado { get; set; }
+    protected void SelectProduct(Productos item)
+    {
+        CodigoSeleccionado = item.CodigoProducto;
+
     }
 
 }
