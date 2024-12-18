@@ -1,0 +1,332 @@
+﻿@page "/Categories"
+@inject IServiciosCategorias ServiciosCategorias
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Categories</title>
+    </head>
+    <body>
+        <h1 class="H1">Categories</h1>
+        <hr />
+        <div class="Container2">
+            <h1>Information of Categories</h1>
+            <p>Search all the Categories</p>
+            <button @onclick="GetAllCategories">Press Me</button>
+            @if(listac!=null)
+             {
+                 <table>
+                    <thead>
+                        <tr>
+                            <th>CategoryID</th>
+                            <th>CategoryName</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                             @foreach(Categorias item in listac)
+                            {
+                                <tr>
+                                    <td>@item.CodigoCategoria</td>
+                                    <td>@item.NombreCategoria</td>
+                                    <td>@item.Descripcion</td>
+                                </tr>
+                        
+                            }
+                    </tbody>
+                 </table>
+            
+             }
+        </div>
+        <hr />
+
+        <div class="Container2">
+            <h1>Searching for one Register of Categories</h1>
+            <p>
+                Write the Category´s ID:
+                <input type="text" @bind="CodGet" required />
+            </p>
+            <button @onclick="GetFiltrated">Search me</button>
+
+                 @if(Category!=null)
+                 {
+                     <p>Category found</p>
+                     <p>Category´s ID: @Category.CodigoCategoria</p>
+                     <p>Category´s Name: @Category.NombreCategoria </p>
+            <p>Category´s Description: @Category.Descripcion</p>
+
+        }
+        else
+        {
+            <p>Error:@MessageGetFil</p>
+        }
+    </div>
+    <hr />
+
+    <div class="Container2">
+        <form>
+            <h1>Add new Category</h1>
+            <p>
+                Write the Category´s Name:
+                <input type="text" @bind="Cpost.NombreCategoria" required />
+            </p>
+            <p>
+                Write the Category´s Description:
+                <input type="text" @bind="Cpost.Descripcion" required />
+            </p>
+
+            <button @onclick="PostCategory">Add new</button>
+
+            @if(SuccessPost!=false)
+            {
+                <p>Success Insert of Categories</p>
+            }
+            else
+            {
+                <p>Error:@MessagePost</p>
+            }
+        </form>
+    </div>
+    <hr />
+    <div class="Container2">
+        <h1>Delete of Categories</h1>
+        <p>
+            Write the Category´s ID:
+            <input type="text" @bind="Coddelete" required />
+        </p>
+        <button @onclick="DeleteCategories">Delete me</button>
+
+        @if(SuccessDelete!=false)
+        {
+            <p>Success Delete</p>
+        }
+        else
+        {
+            <p>Error:@MessageDelete</p>
+        }
+    </div>
+    <hr />
+
+    <div class="Container2">
+        <h1>Edit of Categories</h1>
+        <p>
+            Write the Category´s ID:
+            <input type="text" @bind="CodPut" required />
+        </p>
+        <button @onclick="GetPutCategories">Find Me</button>
+        @if(CategoryPut!=null)
+        {
+            <div class="container3">
+                <h2>Category Found</h2>
+                <p>
+                    Write the Category´s Name that you want to edit:
+                    <input type="text" @bind="CategoryPut.NombreCategoria" required />
+                </p>
+                <p>
+                    Write the Category´s Description that you want to edit:
+                    <input type="text" @bind="CategoryPut.Descripcion" required />
+                </p>
+                <button @onclick="EditCategory">Edit me</button>
+                    
+                @if(SuccessPut!=false)
+                {
+                    <p>Success Edit</p>
+                }
+                else
+                {
+                    <p>Error:@MessageP</p>
+                }
+            </div>
+
+        }
+        else
+        {
+            <p>Error:@MessagePG</p>
+        }
+    </div>
+    
+    </body>
+    </html>
+
+
+@code {
+    //GET ALL THE CATEGORIES
+    public List<Categorias>? listac { get; set; }
+    public string? MessageGetAll {get;set;}
+    protected async Task GetAllCategories()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias";
+            var response = await ServiciosCategorias.GetCategorias<List<Categorias>>(url);
+            if(!response.Error)
+            {
+                listac = response.Response;
+                MessageGetAll = String.Empty;
+            }
+            else
+            {
+                listac = null;
+                MessageGetAll = await response.GetErrorMessageAsync();
+            }
+
+        }catch(Exception e)
+        {
+            listac = null;
+            MessageGetAll = "error:" + e.Message;
+
+        }
+
+    }
+
+    //GET FILTRATED
+    public Categorias? Category { get; set; }
+    public int CodGet { get; set; }
+    public String? MessageGetFil { get; set; }
+    protected async Task GetFiltrated()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias/"+CodGet;
+            var response = await ServiciosCategorias.GetCategorias<Categorias>(url);
+            if(!response.Error)
+            {
+                Category = response.Response;
+                MessageGetFil = String.Empty;
+
+            }
+            else
+            {
+                Category = null;
+                MessageGetFil = await response.GetErrorMessageAsync();
+            }
+
+        }catch(Exception e)
+        {
+            Category = null;
+            MessageGetFil = "Eror:" + e.Message;
+
+        }
+    }
+
+    //Post Categorias
+
+    public Categorias Cpost { get; set; } = new Categorias();
+    public bool SuccessPost = false;
+    public string? MessagePost { get; set; }
+    protected async Task PostCategory()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias";
+            var response = await ServiciosCategorias.PostCategorias<Categorias>(url, Cpost);
+            if(!response.Error)
+            {
+                SuccessPost = true;
+                MessagePost = String.Empty;
+            }
+            else
+            {
+                SuccessPost = false;
+                MessagePost = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPost = false;
+            MessagePost = "error:" + e.Message;
+
+        }
+    }
+
+
+    //Delete Categorias
+    public int Coddelete { get; set; }
+    public bool SuccessDelete=false;
+    public string? MessageDelete { get; set; }
+    protected async Task DeleteCategories()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias/" + Coddelete;
+            var response = await ServiciosCategorias.DeleteCategorias(url);
+            if(!response.Error)
+            {
+                SuccessDelete = true;
+                MessageDelete = String.Empty;
+
+            }
+            else
+            {
+                SuccessDelete = false;
+                MessageDelete = await response.GetErrorMessageAsync();
+
+            }
+
+        }catch (Exception e)
+        {
+            SuccessDelete = false;
+            MessageDelete = "Error:"+e.Message;
+
+        }
+    }
+
+    //Get and Put for Categories
+    public Categorias? CategoryPut { get; set; }
+    public int CodPut { get; set; }
+    public string? MessagePG { get; set; }
+
+    protected async Task GetPutCategories()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias/" + CodPut;
+            var response = await ServiciosCategorias.GetCategorias<Categorias>(url);
+            if (!response.Error)
+            {
+                CategoryPut = response.Response;
+                MessagePG = String.Empty;
+
+            }
+            else
+            {
+                CategoryPut = null;
+                MessagePG = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            CategoryPut = null;
+            MessagePG = "Eror:" + e.Message;
+
+        }
+
+    }
+    public bool SuccessPut = false;
+    public string? MessageP { get; set; }
+    protected async Task EditCategory()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias/" + CodPut;
+            var response = await ServiciosCategorias.PutCategorias<Categorias>(url, CategoryPut);
+            if(!response.Error)
+            {
+                SuccessPut = true;
+                MessageP = String.Empty;
+            }
+            else
+            {
+                SuccessPut = false;
+                MessageP = await response.GetErrorMessageAsync();
+            }
+
+
+        }catch (Exception e)
+        {
+            SuccessPut = false;
+            MessageP = "Error:" + e.Message;
+
+        }
+    }
+}

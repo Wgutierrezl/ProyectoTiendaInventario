@@ -1,0 +1,341 @@
+﻿@page "/Suppliers"
+@inject IServiciosProveedores ServiciosProveedores
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Suppliers</title>
+    </head>
+    <body>
+           <h1 class="H1">Proveedorees</h1>
+           <hr />
+           <div class="container">
+               <h2>Busqueda de Proveedores</h2>
+               <button class="button" @onclick="TraerListaProveedores">Buscarlos</button>
+
+        @if(listap!=null)
+        {
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>CodigoProveedor</th>
+                        <th>NombreProveedor</th>
+                        <th>Telefono</th>
+                        <th>Email</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    @foreach (Proveedores item in listap)
+                    {
+                        <tr>
+                            <td>@item.CodigoProveedor</td>
+                            <td>@item.NombreProveedor</td>
+                            <td>@item.Telefono</td>
+                            <td>@item.Email</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        }
+        else
+        {
+            <p style="color:red">Error:@MessageGetAll</p>
+        }
+    </div>
+
+    <div class="container">
+        <h1>Busqueda de Proveedores</h1>
+        <p>
+            Digite el Codigo del Proveedor
+            <input type="text" @bind="CodGet" />
+        </p>
+        <button class="button" @onclick="GetSupplierID">Bring Him</button>
+        @if(ProveedorGet!=null)
+        {
+            <p>Supplier Found</p>
+            <p>ID:@ProveedorGet.CodigoProveedor</p>
+            <p>Supplier Name:@ProveedorGet.NombreProveedor</p>
+            <p>@ProveedorGet.Telefono</p>
+            <p>@ProveedorGet.Email</p>
+        }
+        else
+        {
+            <p style="color:red">Error:@MessageGetFiltrated</p>
+        }
+    </div>
+
+    <div class="container">
+        <h1>Delete Suppliers</h1>
+        <p>
+            Write the Supplier's ID:
+            <input type="text" @bind="CodDelete" />
+        </p>
+        <button class="button" @onclick="DeleteSupplierID">Delete it</button>
+        @if(SuccessDelete!=false)
+        {
+            <p>Success Delete</p>
+        }
+        else
+        {
+            <p style="color:red">Error:@MessageDelete</p>
+        }
+    </div>
+
+    <div class="container">
+        <h1>Post Suppliers</h1>
+        <p>
+            Write the Supplier´s Name:
+            <input type="text" @bind="SuppliersPost.NombreProveedor" required />
+        </p>
+        <p>
+            Write the Supplier´s Phone:
+            <input type="text" @bind="SuppliersPost.Telefono" required />
+        </p>
+        <p>
+            Write the Supplier´s Email:
+            <input type="text" @bind="SuppliersPost.Email" required />
+        </p>
+        <button class="button" @onclick="PostSuppliers">Add me</button>
+
+        @if(SuccessPost!=false)
+        {
+            <p>Success Insert</p>
+        }
+        else
+        {
+            <p style="color:red">Error:@MessagePost</p>
+        }
+    </div>
+
+    <div class="container">
+        <h1>Put Suppliers</h1>
+        <p>
+            Write the Supplier´s ID:
+            <input type="text" @bind="CGet" required />
+        </p>
+        <button class="button" @onclick="PutGetSuppliers">Bring it</button>
+
+        @if(SpPut!=null)
+        {
+            <h1>Supplier Found</h1>
+            <p>
+                Modified the Supplier´s Name:
+                <input type="text" @bind="SpPut.NombreProveedor" required />
+            </p>
+            <p>
+                Modified the Supplier´s Phone:
+                <input type="text" @bind="SpPut.Telefono" required />
+            </p>
+            <p>
+                Modified the Supplier´s Email:
+                <input type="text" @bind="SpPut.Email" required />
+            </p>
+
+            <button class="button" @onclick="PutSuppliers">Modified it</button>
+            @if(SuccesPut!=false)
+            {
+                <p>Success Modified</p>
+            }
+            else
+            {
+                <p stye="color:red">Error:@MsPut</p>
+            }
+
+        }
+        else
+        {
+            <p style="color:red">Error:@MsGet</p>
+        }
+    </div>
+    </body>
+    </html>
+
+@code {
+    //GET ALL
+    public List<Proveedores>? listap { get; set; }
+    public string? MessageGetAll { get; set; }
+    protected async Task TraerListaProveedores()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Proveedores";
+            var response = await ServiciosProveedores.GetProveedores<List<Proveedores>>(url);
+            if(!response.Error)
+            {
+                listap = response.Response;
+                MessageGetAll = String.Empty;
+            }
+            else
+            {
+                listap = null;
+                MessageGetAll = await response.GetErrorMessageAsync();
+            }
+
+
+        }catch (Exception e)
+        {
+            listap = null;
+            MessageGetAll = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //GET FILTRATED
+    public Proveedores? ProveedorGet { get; set; }
+    public string? MessageGetFiltrated { get; set; }
+    public int CodGet { get; set; }
+
+    protected async Task GetSupplierID()
+    {
+        try
+        {
+
+            string url = "https://localhost:7263/api/Proveedores/" + CodGet;
+            var response = await ServiciosProveedores.GetProveedores<Proveedores>(url);
+            if(!response.Error)
+            {
+                ProveedorGet = response.Response;
+                MessageGetFiltrated = String.Empty;
+            }
+            else
+            {
+                ProveedorGet = null;
+                MessageGetFiltrated = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            ProveedorGet = null;
+            MessageGetFiltrated = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //DELETE SUPPLIER
+    public int CodDelete { get; set; }
+    public bool SuccessDelete = false;
+    public string? MessageDelete { get; set; }
+    protected async Task DeleteSupplierID()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Proveedores/" + CodDelete;
+            var response = await ServiciosProveedores.DeleteProveedores(url);
+            if(!response.Error)
+            {
+                SuccessDelete = true;
+                MessageDelete = String.Empty;
+            }
+            else
+            {
+                SuccessDelete = false;
+                MessageDelete = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessDelete = false;
+            MessageDelete = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //POST SUPPLIERS
+    public Proveedores SuppliersPost { get; set; } = new Proveedores();
+    public string? MessagePost { get; set; }
+    public bool SuccessPost = false;
+    protected async Task PostSuppliers()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Proveedores";
+            var response = await ServiciosProveedores.PostProveedores<Proveedores>(url, SuppliersPost);
+            if(!response.Error)
+            {
+                SuccessPost = true;
+                MessagePost = String.Empty;
+            }
+            else
+            {
+                SuccessPost = false;
+                MessagePost = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPost = false;
+            MessagePost = "Error:" + e.Message;
+
+        }
+
+    }
+
+
+    //PUT SUPPLIERS
+    public Proveedores? SpPut { get; set; }
+    public int CGet { get; set; }
+    public string? MsGet { get; set; }
+
+
+    protected async Task PutGetSuppliers()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Proveedores/" + CGet;
+            var response = await ServiciosProveedores.GetProveedores<Proveedores>(url);
+            if(!response.Error)
+            {
+                MsGet = String.Empty;
+                SpPut = response.Response;
+
+            }
+            else
+            {
+                MsGet = await response.GetErrorMessageAsync();
+                SpPut = null;
+            }
+
+        }catch (Exception e)
+        {
+            MsGet = "Error:" + e.Message;
+            SpPut = null;
+
+        }
+
+    }
+
+    public bool SuccesPut = false;
+    public string? MsPut { get; set; }
+    protected async Task PutSuppliers()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Proveedores/" + CGet;
+            var response = await ServiciosProveedores.PutProveedores<Proveedores>(url, SpPut);
+            if(!response.Error)
+            {
+                SuccesPut = true;
+                MsPut = String.Empty;
+
+            }
+            else
+            {
+                SuccesPut = false;
+                MsPut = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccesPut = false;
+            MsPut = "Error:" + e.Message;
+
+        }
+    }
+
+
+
+}

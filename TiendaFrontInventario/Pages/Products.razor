@@ -1,0 +1,412 @@
+﻿@page "/Products"
+@inject IServiciosProductos ServiciosProductos
+
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Products</title>
+        <link rel="stylesheet" href="~/css/app.css" />
+    </head>
+    <body>
+        <h1 class="H1">Products</h1>
+        <div class="Container2">  
+            <h1>Iinformation of Products</h1>
+            <p>
+                Search all the Produts in the System:
+            </p>
+            <button class="button" @onclick="GetAllProducts">Search me</button>
+
+            @if(listap!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ProductID</th>
+                            <th>ProductName</th>
+                            <th>Description</th>
+                            <th>CategoryID</th>
+                            <th>SupplierID</th>
+                            <th>Sale Price</th>
+                            <th>Purchase Price</th>
+                            <th>Stock</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Productos item in listap)
+                        {
+                            <tr>
+                                <td>@item.CodigoProducto</td>
+                                <td>@item.NombreProducto</td>
+                                <td>@item.Descripcion</td>
+                                <td>@item.CategoriaID</td>
+                                <td>@item.ProveedorID</td>
+                                <td>@item.PrecioVenta</td>
+                                <td>@item.PrecioCompra</td>
+                                <td>@item.Stock</td>
+                            </tr>
+                        
+                        }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Error:@MessageGetAll</p>
+        }
+        </div>
+        <hr />
+
+        <div class="Container2">
+            <h1>Search one register of the Products</h1>
+            <p>
+                Write the Product´s code:
+                <input type="text" @bind="CodGet" required />
+            </p>
+            <button @onclick="GetFiltrated">Look at me</button>
+
+            @if(Product!=null)
+            {
+                <h2>Product Found</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ProductID</th>
+                            <th>ProductName</th>
+                            <th>Description</th>
+                            <th>CategoryID</th>
+                            <th>SupplierID</th>
+                            <th>Sale Price</th>
+                            <th>Purchase Price</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Product.CodigoProducto</td>
+                            <td>@Product.NombreProducto</td>
+                            <td>@Product.Descripcion</td>
+                            <td>@Product.CategoriaID</td>
+                            <td>@Product.ProveedorID</td>
+                            <td>@Product.PrecioVenta</td>
+                            <td>@Product.PrecioCompra</td>
+                            <td>@Product.Stock</td>
+                        </tr>
+                    </tbody>
+            </table>
+        }
+        else
+        {
+            <p>"Error:"@MessageGetFil</p>
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+             <form>
+            <h1>Insert of Products into de System</h1>
+            <p>
+                Write the Product´s Name:
+                <input type="text" @bind="ProductPost.NombreProducto" required />
+            </p>
+            <p>
+                Write the Product´s Description:
+                <input type="text" @bind="ProductPost.Descripcion" required />
+            </p>
+            <p>
+                Write the Product´s CategoryID:
+                <input type="text" @bind="ProductPost.CategoriaID" required />
+            </p>
+            <p>
+                Write the Product´s SupplierID:
+                <input type="text" @bind="ProductPost.ProveedorID" required />
+            </p>
+            <p>
+                Write the Sales Price:
+                <input type="text" @bind="ProductPost.PrecioVenta" required />
+            </p>
+            <p>
+                Write the Purchase Price:
+                <input type="text" @bind="ProductPost.PrecioCompra" required />
+            </p>
+            <p>
+                Write the Stock:
+                <input type="text" @bind="ProductPost.Stock" required />
+            </p>
+            <button @onclick="PostProducts">Add me</button>
+            @if (SuccessPost != false)
+            {
+                <p>Success Insert</p>
+            }
+            else
+            {
+                <p>Error:@MessagePost</p>
+            }
+             </form>
+                  
+        </div>
+
+        <div class="Container2">
+            <h1>Delete from Products</h1>
+            <p>
+                Write the Product´code:
+                <input type="text" @bind="CodDelete" required />
+            </p>
+            <button @onclick="DeleteProducts">Delete me</button>
+            @if(SuccessDelete!=false)
+            {
+            <p>Success Delete</p>
+        }
+        else
+        {
+            <p>Error:@MessageDelete</p>
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+            <h1>Modify the Product´s information</h1>
+            <p>
+                Write the Product´s code:
+                <input type="text" @bind="CodPut" required />
+            </p>
+            <button @onclick="GetPuTProducts">Edit me</button>
+            @if (ProductPut != null)
+            {
+                <div class="container3">
+                    <h1>Product Found</h1>
+                    <p>
+                        Modify the Product´s Name:
+                        <input type="text" @bind="ProductPut.NombreProducto" required />
+                    </p>
+                <p>
+                    Modify the Product´s Description:
+                    <input type="text" @bind="ProductPut.Descripcion" required />
+                </p>
+                <p>
+                    Modify the Product´s CategoryID:
+                    <input type="text" @bind="ProductPut.CategoriaID" required />
+                </p>
+                <p>
+                    Modify the Product´s SupplierID:
+                    <input type="text" @bind="ProductPut.ProveedorID" required />
+                </p>
+                <p>
+                    Modify the Sales Price:
+                    <input type="text" @bind="ProductPut.PrecioVenta" required />
+                </p>
+                <p>
+                    Modify the Purchase Price:
+                    <input type="text" @bind="ProductPut.PrecioCompra" required />
+                </p>
+                <p>
+                    Modify the Stock:
+                    <input type="text" @bind="ProductPut.Stock" required />
+                </p>
+                <button @onclick="EditProducts">Modify the Produtc</button>
+                @if(SuccessPut!=false)
+                {
+                    <p>Success Edit</p>
+                }
+                else
+                {
+                    <p>Error:@MessagePut</p>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Error:@MessagePutGet</p>
+        }
+    </div>
+    </body>
+    </html>
+
+@code {
+
+    public List<Productos>? listap { get; set; }
+    public string? MessageGetAll { get; set; }
+    protected async Task GetAllProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos";
+            var response = await ServiciosProductos.GetProductos<List<Productos>>(url);
+            if(!response.Error)
+            {
+                listap = response.Response;
+                MessageGetAll = String.Empty;
+            }
+            else
+            {
+                listap = null;
+                MessageGetAll = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            listap = null;
+            MessageGetAll = "Error:" + e.Message;
+
+        }
+
+    }
+
+
+    //Get One
+    public Productos? Product { get; set; }
+    public int CodGet { get; set; }
+    public String? MessageGetFil { get; set; }
+    protected async Task GetFiltrated()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos/" + CodGet;
+            var response = await ServiciosProductos.GetProductos<Productos>(url);
+            if (!response.Error)
+            {
+                Product= response.Response;
+                MessageGetFil = String.Empty;
+
+            }
+            else
+            {
+                Product = null;
+                MessageGetFil = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            Product = null;
+            MessageGetFil = "Eror:" + e.Message;
+
+        }
+    }
+
+    //Post
+    public Productos ProductPost { get; set; } = new Productos();
+    public bool SuccessPost = false;
+    public string? MessagePost { get; set; }
+
+    protected async Task PostProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos";
+            var response = await ServiciosProductos.PostProductos<Productos>(url, ProductPost);
+            if (!response.Error)
+            {
+                SuccessPost = true;
+                MessagePost = String.Empty;
+            }
+            else
+            {
+                SuccessPost = false;
+                MessagePost = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            SuccessPost = false;
+            MessagePost = "error:" + e.Message;
+
+        }
+
+    }
+
+    //DELETE
+    public int CodDelete { get; set; }
+    public bool SuccessDelete = false;
+    public string? MessageDelete { get; set; }
+    protected async Task DeleteProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos/" + CodDelete;
+            var response = await ServiciosProductos.DeleteProductos(url);
+            if (!response.Error)
+            {
+                SuccessDelete = true;
+                MessageDelete = String.Empty;
+
+            }
+            else
+            {
+                SuccessDelete = false;
+                MessageDelete = await response.GetErrorMessageAsync();
+
+            }
+
+        }catch (Exception e)
+        {
+            SuccessDelete = false;
+            MessageDelete = "Error:" + e.Message;
+
+        }
+
+    }
+
+
+
+
+
+    //PUT
+    public Productos? ProductPut { get; set; }
+    public int CodPut { get; set; }
+    public string? MessagePutGet {get;set;}
+
+    protected async Task GetPuTProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos/" + CodPut;
+            var response = await ServiciosProductos.GetProductos<Productos>(url);
+            if(!response.Error)
+            {
+                ProductPut = response.Response;
+                MessagePutGet = String.Empty;
+            }
+            else
+            {
+                ProductPut = null;
+                MessagePutGet = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            ProductPut = null;
+            MessagePutGet = "Error:" + e.Message;
+
+        }
+
+    }
+
+
+    public bool SuccessPut = false;
+    public string? MessagePut {get;set;}
+    protected async Task EditProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos/" + CodPut;
+            var response = await ServiciosProductos.PutProductos<Productos>(url, ProductPut);
+            if(!response.Error)
+            {
+                SuccessPut = true;
+                MessagePut = String.Empty;
+            }
+            else
+            {
+                SuccessPut = false;
+                MessagePut = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPut = false;
+            MessagePut = "Error:" + e.Message;
+
+        }
+
+    }
+}

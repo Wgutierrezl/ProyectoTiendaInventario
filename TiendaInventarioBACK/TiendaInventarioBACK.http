@@ -1,0 +1,6 @@
+@TiendaInventarioBACK_HostAddress = http://localhost:5117
+
+GET {{TiendaInventarioBACK_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
