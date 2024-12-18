@@ -1,0 +1,79 @@
+﻿@page "/Check-in"
+@inject IServiciosOrdenes ServiciosOrdenes
+@inject IServiciosDetalleOrden ServiciosDetalleOrden
+@inject IServiciosProductos ServiciosProductos
+
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Check-in</title>
+        <link rel="stylesheet" href="~/css/app.css"
+    </head>
+    <body>
+        <h1 class="H1">Facturacion</h1>
+        <p>Que deseas hacer:</p>
+        <select id="Operacion" @bind="Order.TipoOrden">
+            <option value="Compra">Compra</option>
+            <option value="Venta">Venta</option>
+        </select>
+        <button @onclick="PostOrdenes">Iniciar Facturacion</button>
+        @if(SuccessPost!=false)
+        {
+        <p>Codigo de Facturacion:@CodOrder</p>
+
+        }
+        else
+        {
+            <p>Error:@MessagePost</p>
+        
+        }
+
+    </body>
+    </html>
+
+
+@code {
+    public bool mostrar = false;
+    protected void MostrarFormulario()
+    {
+        mostrar = true;
+    }
+
+    //Post Ordenes
+    public Ordenes Order { get; set; } = new Ordenes();
+    public bool SuccessPost = false;
+    public string? MessagePost { get; set; }
+    public int CodOrder { get; set; }
+    protected async Task PostOrdenes()
+    {
+
+        try
+        {
+            Order.TipoOrden = "---";
+            Order.FechaOrden = DateTime.Now;
+            Order.Total = 0;
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.PostOrdenes<Ordenes>(url, Order);
+            if(!response.Error)
+            {
+                SuccessPost = true;
+                MessagePost = String.Empty;
+                CodOrder = Order.OrderID;
+            }
+            else
+            {
+                SuccessPost = false;
+                MessagePost = await response.GetErrorMessageAsync();
+                CodOrder = 0;
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPost = false;
+            MessagePost = "Error:" + e.Message;
+            CodOrder = 0;
+
+        }
+    }
+
+}

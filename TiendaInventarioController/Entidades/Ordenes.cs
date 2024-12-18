@@ -11,7 +11,7 @@ namespace TiendaInventarioController.Entidades
 	{
 		[Key]
 		public int OrderID { get; set; }
-		public string TipoOrden { get; set; } = null!;
+		public string? TipoOrden { get; set; }
 		public DateTime FechaOrden { get; set; }
 		public decimal Total {  get; set; }
 	}
