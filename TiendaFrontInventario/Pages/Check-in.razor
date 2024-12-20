@@ -14,7 +14,7 @@
 
         <div class="Container2">
         <p>Que deseas hacer:</p>
-        <select id="Operacion" @bind="OperacionRealizada">
+        <select id="Operacion" @bind="TipoOrden">
             <option value="Compra">Compra</option>
             <option value="Venta">Venta</option>
         </select>
@@ -22,7 +22,8 @@
         @if (listaO != null)
         {
             <p>Codigo de Facturacion:@CodOrder</p>
-            <p>Lo que vas a hacer:@OperacionRealizada</p>
+            <p>Fecha de Facturacion:@Fecha</p>
+            <p>Lo que vas a hacer:@TipoOrden</p>
             <hr />
             <div class="Container2">
                 <p>Registrar Producto:</p>
@@ -61,11 +62,46 @@
                 @if (CodigoSeleccionado != null)
                 {
                     <p>Codigo del Producto Seleccionado:@CodigoSeleccionado</p>
+                     
                 }
                 else
                 {
                     <p>No se ha Seleccionado nada</p>
                 }
+                <hr />
+
+                <div class="Container2">
+
+                    <p>Digite la cantidad de Producto a comprar:
+                       <input type="number" @bind="Cantidad" required />
+                    </p>
+
+                    <p>
+                        Precio unitario del Producto:
+                        <input type="text" @bind="PrecioUnitario" readonly />
+                    </p>
+                    <p>Total Comprado:@TotalComprado</p>
+
+                    <button @onclick="PostDetalleOrdenes">Agregar Producto</button>
+
+                    @if(SuccessPostOrders!=false)
+                    {
+                        <p>Factura Registrada</p>
+                        if(SuccessPostDT!=false)
+                        {
+                            <p>Producto Registrado a la factura</p>
+                        }
+                        else
+                        {
+                            <p>Error:@MessagePostDT</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Error:@MessagePostOrders</p>
+                    }
+                </div>
+                
             </div>
 
         }
@@ -75,54 +111,16 @@
 
         }
         </div>
-        
-
-
     </body>
     </html>
 
 
 @code {
 
-
-    //Post Ordenes para mas adelante
-    public Ordenes Order { get; set; } = new Ordenes();
-    public bool SuccessPostOrders = false;
-    public string? MessagePostOrders { get; set; }
-    protected async Task PostOrdenes()
-    {
-
-        try
-        {
-            string url = "https://localhost:7263/api/Ordenes";
-            var response = await ServiciosOrdenes.PostOrdenes<Ordenes>(url, Order);
-            if(!response.Error)
-            {
-                SuccessPostOrders = true;
-                MessagePostOrders = String.Empty;
-
-            }
-            else
-            {
-                SuccessPostOrders = false;
-                MessagePostOrders = await response.GetErrorMessageAsync();
-
-            }
-
-        }catch (Exception e)
-        {
-            SuccessPostOrders = false;
-            MessagePostOrders = "Error:" + e.Message;
-
-        }
-    }
-
-
-
-    //Probando el Acceso
+    //Probando el Acceso, para perdir el ultimo codigo de ordenes
     public List<Ordenes>? listaO { get; set; }
     public int CodOrder { get; set; }
-    public string? OperacionRealizada { get; set; }
+
     public bool Accion = false;
     public string? MessageGetOrders { get; set; }
     protected async void IniciarFac()
@@ -194,10 +192,112 @@
 
     //Metodo para seleccionar el id o codigo del producto en el cual se encuentra parado el usuario
     public int CodigoSeleccionado { get; set; }
+    public decimal PrecioUnitario { get; set; }
+
     protected void SelectProduct(Productos item)
     {
         CodigoSeleccionado = item.CodigoProducto;
+        PrecioUnitario = item.PrecioVenta;
 
     }
 
+
+
+
+    //Metodo para agregar DetalleOrdenes
+    public DetalleOrden DTOrdenes { get; set; } = new DetalleOrden();
+    public bool SuccessPostDT = false;
+    public string? MessagePostDT { get; set; }
+    public int Cantidad { get; set; }
+
+    protected async Task PostDetalleOrdenes()
+    {
+        await PostOrdenes();
+        if(SuccessPostOrders!=false)
+        {
+            DTOrdenes.IdOrden = CodOrder;
+            DTOrdenes.ProductoID = CodigoSeleccionado;
+            DTOrdenes.Cantidad = Cantidad;
+            DTOrdenes.PrecioUnitario = PrecioUnitario;
+            try
+            {
+                string url = "https://localhost:7263/api/DetalleOrdens";
+                var response = await ServiciosDetalleOrden.PostDetalleOrden<DetalleOrden>(url, DTOrdenes);
+                if (!response.Error)
+                {
+                    SuccessPostDT = true;
+                    MessagePostDT = String.Empty;
+                }
+                else
+                {
+                    SuccessPostDT = false;
+                    MessagePostDT = await response.GetErrorMessageAsync();
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                SuccessPostDT = false;
+                MessagePostDT = "Error:" + e.Message;
+
+            }
+
+        }
+        else
+        {
+            MessagePostOrders = "No se ha podido hacer el registro de factura";
+        }
+
+
+
+    }
+
+
+    //Post Ordenes para mas adelante, cuando se finalice el proceso de facturacion
+    public Ordenes Order { get; set; } = new Ordenes();
+    public bool SuccessPostOrders = false;
+    public string? MessagePostOrders { get; set; }
+
+    public decimal acumulado = 0;
+
+    public string? TipoOrden { get; set; }
+    public DateTime Fecha = DateTime.Now;
+    public decimal TotalComprado { get; set; }
+
+    protected async Task PostOrdenes()
+    {
+        Order.OrderID = CodOrder;
+        Order.TipoOrden = TipoOrden;
+        Order.FechaOrden = Fecha;
+        Order.Total = Cantidad * PrecioUnitario;
+
+        acumulado = acumulado + Order.Total;
+
+
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.PostOrdenes<Ordenes>(url, Order);
+            if (!response.Error)
+            {
+                SuccessPostOrders = true;
+                MessagePostOrders = String.Empty;
+
+            }
+            else
+            {
+                SuccessPostOrders = false;
+                MessagePostOrders = await response.GetErrorMessageAsync();
+
+            }
+
+        }
+        catch (Exception e)
+        {
+            SuccessPostOrders = false;
+            MessagePostOrders = "Error:" + e.Message;
+
+        }
+    }
 }
