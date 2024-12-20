@@ -7,7 +7,7 @@
     <html>
     <head>
         <title>Check-in</title>
-        <link rel="stylesheet" href="~/css/app.css"
+        <link rel="stylesheet" href="~/css/app.css" />
     </head>
     <body>
         <h1 class="H1">Facturacion</h1>
@@ -51,7 +51,16 @@
                                 </tr>
                             }
                         </tbody>
-                    </table>   
+                    </table>
+                    @if (CodigoSeleccionado != null)
+                    {
+                        <p>Codigo del Producto Seleccionado:@CodigoSeleccionado</p>
+
+                    }
+                    else
+                    {
+                        <p>No se ha Seleccionado nada</p>
+                    }
                 }
                 else
                 {
@@ -59,15 +68,6 @@
                     
                 }
 
-                @if (CodigoSeleccionado != null)
-                {
-                    <p>Codigo del Producto Seleccionado:@CodigoSeleccionado</p>
-                     
-                }
-                else
-                {
-                    <p>No se ha Seleccionado nada</p>
-                }
                 <hr />
 
                 <div class="Container2">
@@ -80,7 +80,7 @@
                         Precio unitario del Producto:
                         <input type="text" @bind="PrecioUnitario" readonly />
                     </p>
-                    <p>Total Comprado:@TotalComprado</p>
+                    <p>Total Comprado:@acumulado</p>
 
                     <button @onclick="PostDetalleOrdenes">Agregar Producto</button>
 
@@ -99,11 +99,25 @@
                     else
                     {
                         <p>Error:@MessagePostOrders</p>
+                        
                     }
                 </div>
                 
             </div>
-
+            <div class="Container2">
+                <button @onclick="LimpiarCampos">Limpiar Campos</button>
+            </div>
+            <div class="container2">
+                <button @onclick="Finalizar">Finalizar Factura</button>
+                @if(SuccessPutOrder!=false)
+                {
+                    <p>Factura finalizada</p>
+                }
+                else
+                {
+                    <p>Error:@MessagePutOrder</p>
+                }
+            </div>
         }
         else
         {
@@ -116,6 +130,7 @@
 
 
 @code {
+
 
     //Probando el Acceso, para perdir el ultimo codigo de ordenes
     public List<Ordenes>? listaO { get; set; }
@@ -158,6 +173,81 @@
         }
 
     }
+
+
+    // public Ordenes OrderPost { get; set; } = new Ordenes();
+    // public bool SucessPostOrderTry = false;
+    // public string? MessagePostOrderTry { get; set; }
+    // protected async Task IniciarFac()
+    // {
+    //     try
+    //     {
+    //         string url = "https://localhost:7263/api/Ordenes";
+    //         var response = await ServiciosOrdenes.GetOrdenes<List<Ordenes>>(url);
+    //         if (!response.Error)
+    //         {
+    //             listaO = response.Response;
+    //             var posicion = listaO?.LastOrDefault();
+    //             CodOrder = posicion.OrderID;
+    //             // OrderPost.OrderID=CodOrder++;
+    //             // OrderPost.TipoOrden = "-";
+    //             // OrderPost.FechaOrden = DateTime.Now;
+    //             // OrderPost.Total = 0;
+    //             OrderPost = new Ordenes
+    //             {
+    //                     OrderID = CodOrder,
+    //                     TipoOrden = "-",
+    //                     FechaOrden = DateTime.Now,
+    //                     Total = 0
+    //             };
+    //             MessageGetOrders = String.Empty;
+
+    //             try
+    //             {
+    //                 var responsepost = await ServiciosOrdenes.PostOrdenes<Ordenes>(url, OrderPost);
+    //                 if(!responsepost.Error)
+    //                 {
+    //                     SucessPostOrderTry = true;
+    //                     MessagePostOrderTry = String.Empty;
+
+    //                 }
+    //                 else
+    //                 {
+    //                     SucessPostOrderTry=false;
+    //                     MessagePostOrderTry = await responsepost.GetErrorMessageAsync();
+    //                 }
+
+    //             }catch(Exception e)
+    //             {
+    //                 SucessPostOrderTry = false;
+    //                 MessagePostOrderTry = "Error:" + e.Message;
+
+
+    //             }
+
+    //         }
+    //         else
+    //         {
+    //             listaO = null;
+    //             MessageGetOrders = await response.GetErrorMessageAsync();
+    //             CodOrder = -1;
+
+
+    //         }
+
+
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         listaO = null;
+    //         MessageGetOrders = "Error:" + e.Message;
+    //         CodOrder = -1;
+
+    //     }
+
+    // }
+
+
 
     //Metodo para Traer Productos
     public List<Productos>? listap { get; set; }
@@ -212,44 +302,59 @@
 
     protected async Task PostDetalleOrdenes()
     {
-        await PostOrdenes();
-        if(SuccessPostOrders!=false)
+        if(ControladorVenta != true)
         {
-            DTOrdenes.IdOrden = CodOrder;
-            DTOrdenes.ProductoID = CodigoSeleccionado;
-            DTOrdenes.Cantidad = Cantidad;
-            DTOrdenes.PrecioUnitario = PrecioUnitario;
-            try
+            await PostOrdenes();
+            if (SuccessPostOrders != false)
             {
-                string url = "https://localhost:7263/api/DetalleOrdens";
-                var response = await ServiciosDetalleOrden.PostDetalleOrden<DetalleOrden>(url, DTOrdenes);
-                if (!response.Error)
+                DTOrdenes.IdOrden = CodOrder;
+                DTOrdenes.ProductoID = CodigoSeleccionado;
+                DTOrdenes.Cantidad = Cantidad;
+                DTOrdenes.PrecioUnitario = PrecioUnitario;
+                try
                 {
-                    SuccessPostDT = true;
-                    MessagePostDT = String.Empty;
+                    string url = "https://localhost:7263/api/DetalleOrdens";
+                    var response = await ServiciosDetalleOrden.PostDetalleOrden<DetalleOrden>(url, DTOrdenes);
+                    if (!response.Error)
+                    {
+                        SuccessPostDT = true;
+                        MessagePostDT = String.Empty;
+                    }
+                    else
+                    {
+                        SuccessPostDT = false;
+                        MessagePostDT = await response.GetErrorMessageAsync();
+                    }
+
+
                 }
-                else
+                catch (Exception e)
                 {
                     SuccessPostDT = false;
-                    MessagePostDT = await response.GetErrorMessageAsync();
+                    MessagePostDT = "Error:" + e.Message;
+
                 }
 
-
             }
-            catch (Exception e)
+            else
             {
-                SuccessPostDT = false;
-                MessagePostDT = "Error:" + e.Message;
+                MessagePostOrders += MessagePostOrders + "Error en el post";
 
             }
 
         }
         else
         {
-            MessagePostOrders = "No se ha podido hacer el registro de factura";
+            await ProcesarNuevosProductos();
+            if(SuccessPostDT!=false)
+            {
+                SuccessPostOrders = true;
+            }
+            else
+            {
+                SuccessPostOrders = false;
+            }
         }
-
-
 
     }
 
@@ -264,6 +369,7 @@
     public string? TipoOrden { get; set; }
     public DateTime Fecha = DateTime.Now;
     public decimal TotalComprado { get; set; }
+    public bool ControladorVenta = false;
 
     protected async Task PostOrdenes()
     {
@@ -283,12 +389,14 @@
             {
                 SuccessPostOrders = true;
                 MessagePostOrders = String.Empty;
+                ControladorVenta = true;
 
             }
             else
             {
                 SuccessPostOrders = false;
                 MessagePostOrders = await response.GetErrorMessageAsync();
+                ControladorVenta = false;
 
             }
 
@@ -297,7 +405,118 @@
         {
             SuccessPostOrders = false;
             MessagePostOrders = "Error:" + e.Message;
+            ControladorVenta = false;
 
         }
+    }
+
+    //Metodo para limpiar Campos
+
+    public void LimpiarCampos()
+    {
+        CodigoSeleccionado = 0;
+        Cantidad = 0;
+        PrecioUnitario = 0;
+        SuccessPostDT = false;
+        MessagePostDT = null;
+        SuccessPostOrders = false;
+        MessagePostOrders = null;
+        listap = null;
+
+
+    }
+
+    //Metodo para finalizar el registro de factura e iniciar otra
+    public bool SuccessPutOrder = false;
+    public string? MessagePutOrder { get; set; }
+    public Ordenes OrderPut { get; set; }
+    protected async Task Finalizar()
+    {
+        // Order.OrderID = CodOrder;
+        // Order.TipoOrden = TipoOrden;
+        // Order.FechaOrden=Fecha; 
+        // Order.Total = acumulado;
+        OrderPut.OrderID = CodOrder;
+        OrderPut.TipoOrden = TipoOrden;
+        OrderPut.FechaOrden = Fecha;
+        OrderPut.Total = acumulado;
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.PutOrdenes<Ordenes>(url, OrderPut);
+            if(!response.Error)
+            {
+                SuccessPutOrder = true;
+                MessagePutOrder = String.Empty;
+                ControladorVenta = false;
+                LimpiarCamposFinal();
+
+            }
+            else
+            {
+                SuccessPutOrder = false;
+                MessagePutOrder = await response.GetErrorMessageAsync();
+                ControladorVenta = true;
+            }
+
+        }catch(Exception e)
+        {
+            SuccessPutOrder = false;
+            MessagePutOrder = "Error:" + e.Message;
+            ControladorVenta = true;
+
+        }
+
+    }
+
+    public void LimpiarCamposFinal()
+    {
+        CodOrder = 0;
+        listaO = null;
+        CodigoSeleccionado = 0;
+        Cantidad = 0;
+        PrecioUnitario = 0;
+        SuccessPostDT = false;
+        MessagePostDT = null;
+        SuccessPostOrders = false;
+        MessagePostOrders = null;
+        listap = null;
+        acumulado = 0;
+    }
+
+
+    //Metodo para poder procesar nuevos productos
+    
+    protected async Task ProcesarNuevosProductos()
+    {
+        DTOrdenes.IdOrden = CodOrder;
+        DTOrdenes.ProductoID = CodigoSeleccionado;
+        DTOrdenes.Cantidad = Cantidad;
+        DTOrdenes.PrecioUnitario = PrecioUnitario;
+        acumulado = acumulado + (DTOrdenes.PrecioUnitario * DTOrdenes.Cantidad);
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens";
+            var response = await ServiciosDetalleOrden.PostDetalleOrden<DetalleOrden>(url, DTOrdenes);
+            if (!response.Error)
+            {
+                SuccessPostDT = true;
+                MessagePostDT = String.Empty;
+            }
+            else
+            {
+                SuccessPostDT = false;
+                MessagePostDT = await response.GetErrorMessageAsync();
+            }
+
+
+        }
+        catch (Exception e)
+        {
+            SuccessPostDT = false;
+            MessagePostDT = "Error:" + e.Message;
+
+        }
+        
     }
 }
