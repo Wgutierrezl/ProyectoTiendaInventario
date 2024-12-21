@@ -138,7 +138,7 @@
 
     public bool Accion = false;
     public string? MessageGetOrders { get; set; }
-    protected async void IniciarFac()
+    protected async Task IniciarFac()
     {
         try
         {
@@ -148,7 +148,7 @@
             {
                 listaO = response.Response;
                 var posicion = listaO?.LastOrDefault();
-                CodOrder = posicion.OrderID;
+                CodOrder = posicion?.OrderID ?? 0;
                 CodOrder++;
                 Accion = true;
                 MessageGetOrders = String.Empty;
@@ -429,7 +429,7 @@
     //Metodo para finalizar el registro de factura e iniciar otra
     public bool SuccessPutOrder = false;
     public string? MessagePutOrder { get; set; }
-    public Ordenes OrderPut { get; set; }
+    public Ordenes OrderPut { get; set; } = new Ordenes();
     protected async Task Finalizar()
     {
         // Order.OrderID = CodOrder;
@@ -442,7 +442,7 @@
         OrderPut.Total = acumulado;
         try
         {
-            string url = "https://localhost:7263/api/Ordenes";
+            string url = "https://localhost:7263/api/Ordenes/"+CodOrder;
             var response = await ServiciosOrdenes.PutOrdenes<Ordenes>(url, OrderPut);
             if(!response.Error)
             {
