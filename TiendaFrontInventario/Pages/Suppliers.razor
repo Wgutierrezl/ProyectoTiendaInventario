@@ -4,17 +4,18 @@
     <html>
     <head>
         <title>Suppliers</title>
+        <link rel="stylesheet" href="~/css/app.css" />
     </head>
     <body>
            <h1 class="H1">Proveedorees</h1>
            <hr />
-           <div class="container">
+           <div class="Container2">
                <h2>Busqueda de Proveedores</h2>
-               <button class="button" @onclick="TraerListaProveedores">Buscarlos</button>
+               <button @onclick="TraerListaProveedores">Buscarlos</button>
 
         @if(listap!=null)
         {
-            <table border="1">
+            <table>
                 <thead>
                     <tr>
                         <th>CodigoProveedor</th>
@@ -44,13 +45,13 @@
         }
     </div>
 
-    <div class="container">
+    <div class="Container2">
         <h1>Busqueda de Proveedores</h1>
         <p>
             Digite el Codigo del Proveedor
             <input type="text" @bind="CodGet" />
         </p>
-        <button class="button" @onclick="GetSupplierID">Bring Him</button>
+        <button @onclick="GetSupplierID">Bring Him</button>
         @if(ProveedorGet!=null)
         {
             <p>Supplier Found</p>
@@ -65,24 +66,24 @@
         }
     </div>
 
-    <div class="container">
+    <div class="Container2">
         <h1>Delete Suppliers</h1>
         <p>
             Write the Supplier's ID:
             <input type="text" @bind="CodDelete" />
         </p>
-        <button class="button" @onclick="DeleteSupplierID">Delete it</button>
+        <button @onclick="DeleteSupplierID">Delete it</button>
         @if(SuccessDelete!=false)
         {
             <p>Success Delete</p>
         }
         else
         {
-            <p style="color:red">Error:@MessageDelete</p>
+            <p>Error:@MessageDelete</p>
         }
     </div>
 
-    <div class="container">
+    <div class="Container2">
         <h1>Post Suppliers</h1>
         <p>
             Write the Supplier´s Name:
@@ -96,7 +97,7 @@
             Write the Supplier´s Email:
             <input type="text" @bind="SuppliersPost.Email" required />
         </p>
-        <button class="button" @onclick="PostSuppliers">Add me</button>
+        <button @onclick="PostSuppliers">Add me</button>
 
         @if(SuccessPost!=false)
         {
@@ -104,17 +105,17 @@
         }
         else
         {
-            <p style="color:red">Error:@MessagePost</p>
+            <p>Error:@MessagePost</p>
         }
     </div>
 
-    <div class="container">
+    <div class="Container2">
         <h1>Put Suppliers</h1>
         <p>
             Write the Supplier´s ID:
             <input type="text" @bind="CGet" required />
         </p>
-        <button class="button" @onclick="PutGetSuppliers">Bring it</button>
+        <button @onclick="PutGetSuppliers">Bring it</button>
 
         @if(SpPut!=null)
         {
@@ -132,20 +133,20 @@
                 <input type="text" @bind="SpPut.Email" required />
             </p>
 
-            <button class="button" @onclick="PutSuppliers">Modified it</button>
+            <button @onclick="PutSuppliers">Modified it</button>
             @if(SuccesPut!=false)
             {
                 <p>Success Modified</p>
             }
             else
             {
-                <p stye="color:red">Error:@MsPut</p>
+                <p>Error:@MsPut</p>
             }
 
         }
         else
         {
-            <p style="color:red">Error:@MsGet</p>
+            <p>Error:@MsGet</p>
         }
     </div>
     </body>
