@@ -1,5 +1,304 @@
-﻿<h3>Orders</h3>
+﻿@page "/Orders"
+@inject IServiciosOrdenes ServiciosOrdenes
+
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Orders</title>
+        <link rel="stylesheet" href="~/css/app.css" />
+    </head>
+    <body>
+
+        <h1 class="H1">Orders</h1>
+
+        <div class="Container2">
+            <h1>Search all the Orders</h1>
+            <button @onclick="GetAllOrders">Search</button>
+            @if(listaO!=null)
+            {
+            <table>
+                <thead>
+                    <tr>
+                        <th>OrderID</th>
+                        <th>Kind of Order</th>
+                        <th>Required Date</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(Ordenes item in listaO)
+                    {
+                        <tr>
+                            <td>@item.OrderID</td>
+                            <td>@item.TipoOrden</td>
+                            <td>@item.FechaOrden</td>
+                            <td>@item.Total</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        }
+        else
+        {
+            <p>Error:@MessageOrderGet</p>
+        }
+        </div>
+        <hr />
+
+        <div class="Container2">
+            <h1>Search one register of Orders</h1>
+            <p>
+                Write the Order´s Code:
+                <input type="text" @bind="CodGet" required />
+            </p>
+            <button @onclick="GetFiltrated">Search me</button>
+            @if(OrderGet!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OrderID</th>
+                            <th>Kind of Order</th>
+                            <th>Required Date</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@OrderGet.OrderID</td>
+                            <td>@OrderGet.TipoOrden</td>
+                            <td>@OrderGet.FechaOrden</td>
+                            <td>@OrderGet.Total</td>
+                        </tr>
+                    </tbody>
+            </table>
+
+        }
+        else
+        {
+            <p>Error:@MessageGetFiltrated</p>
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+            <h1>Delete of Orders</h1>
+            <p>
+                Write the Order´s code for delete:
+                <input type="text" @bind="CodDelete" required />
+            </p>
+            <button @onclick="DeleteOrders">Delete Order</button>
+            @if(SuccessDelete!=false)
+            {
+            <p>Success delete of Order</p>
+        }
+        else
+        {
+            <p>Error:@MessageDelete</p>
+        }
+        </div>
+        <hr />
+
+        <div class="Container2">
+            <h1>Modify the register of orders</h1>
+            <p>
+                Write the Order´s code:
+                <input type="text" @bind="CodPut" required />
+            </p>
+            <button @onclick="GetPutOrders">Find me</button>
+
+            @if(OrderPut!=null)
+            {
+                <h2>Order found</h2>
+                <hr />
+                <div class="container3">
+                    <p>
+                        Modify the Order´s kind:
+                        <input type="text" @bind="OrderPut.TipoOrden" required />
+                    </p>
+                    <p>
+                        Modify the Order´s date:
+                        <input type="datetime" @bind="OrderPut.FechaOrden" required />
+                    </p>
+                    <p>
+                        Modify the Order´s Total or whole:
+                        <input type="text" @bind="OrderPut.Total" required />
+                    </p>
+                    <button @onclick="PutOrders">Edit me</button>
+                    @if(SuccessPut!=false)
+                     {
+                    <p>Success Edit of Orders</p>
+
+                }
+                else
+                {
+                    <p>Error:@MessagePut</p>
+                }
+            </div>
+
+        }
+        else
+        {
+            <p>Error:@MessagePutGet</p>
+        }
+
+        </div>
+    
+    </body>
+    </html>
 
 @code {
+
+    //Metodo get para traer todas las ordenes
+    public List<Ordenes>? listaO { get; set; }
+    public string? MessageOrderGet { get; set; }
+    protected async Task GetAllOrders()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.GetOrdenes<List<Ordenes>>(url);
+            if(!response.Error)
+            {
+                listaO = response.Response;
+                MessageOrderGet = String.Empty;
+            }
+            else
+            {
+                listaO = null;
+                MessageOrderGet = await response.GetErrorMessageAsync();
+            }
+
+
+        }catch (Exception e)
+        {
+            listaO = null;
+            MessageOrderGet = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo get filtrado para un solo registro
+    public Ordenes? OrderGet { get; set; }
+    public string? MessageGetFiltrated { get; set; }
+    public int CodGet { get; set; }
+
+    protected async Task GetFiltrated()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes/"+CodGet;
+            var response = await ServiciosOrdenes.GetOrdenes<Ordenes>(url);
+            if(!response.Error)
+            {
+                OrderGet = response.Response;
+                MessageGetFiltrated = String.Empty;
+            }
+            else
+            {
+                OrderGet = null;
+                MessageGetFiltrated = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            OrderGet = null;
+            MessageGetFiltrated = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo Delete para eliminar ordenes
+
+    public int CodDelete { get; set; }
+    public bool SuccessDelete = false;
+    public string? MessageDelete { get; set; }
+
+    protected async Task DeleteOrders()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes/" + CodDelete;
+            var response = await ServiciosOrdenes.DeleteOrdenes(url);
+            if(!response.Error)
+            {
+                SuccessDelete = true;
+                MessageDelete = String.Empty;
+            }
+            else
+            {
+                SuccessDelete = false;
+                MessageDelete = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessDelete = false;
+            MessageDelete = "Error:" + e.Message;
+
+        }
+    }
+
+    //Metodo put y get para actualizar una cantidad o algo de una orden
+    public int CodPut { get; set; }
+    public Ordenes? OrderPut { get; set; }
+    public string? MessagePutGet { get; set; }
+    protected async Task GetPutOrders()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes/" + CodPut;
+            var response = await ServiciosOrdenes.GetOrdenes<Ordenes>(url);
+            if (!response.Error)
+            {
+                OrderPut = response.Response;
+                MessagePutGet = String.Empty;
+            }
+            else
+            {
+                OrderPut = null;
+                MessagePutGet = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            OrderPut = null;
+            MessagePutGet= "Error:" + e.Message;
+
+        }
+
+
+    }
+
+    public bool SuccessPut = false;
+    public string? MessagePut { get; set; }
+    protected async Task PutOrders()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes/" + CodPut;
+            var response=await ServiciosOrdenes.PutOrdenes<Ordenes>(url,OrderPut);
+            if(!response.Error)
+            {
+                SuccessPut = true;
+                MessagePut = String.Empty;
+            }
+            else
+            {
+                SuccessPut = false;
+                MessagePut = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPut = false;
+            MessagePut = "Error:" + e.Message;
+
+        }
+
+    }
 
 }

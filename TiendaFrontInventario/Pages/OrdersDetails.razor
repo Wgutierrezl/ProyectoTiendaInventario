@@ -1,5 +1,80 @@
-﻿<h3>OrdersDetails</h3>
+﻿@page "/OrdersDetails"
+@inject IServiciosDetalleOrden ServiciosDetalleOrden
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>OrderDetails</title>
+        <link rel="stylesheet" href="~/css/app.css" />
+    </head>
+    <body>
+        <h1 class="H1">Orders Details</h1>
+        <div class="Container2">
+            <h1>Search all the register of the Orders Details</h1>
+            <button @onclick="GetAllOrdersDetails">Search all</button>
+            @if(listad!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OrderDetailID</th>
+                            <th>OrderID</th>
+                            <th>ProductID</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DetalleOrden item in listad)
+                        {
+                            <tr>
+                                <td>@item.DetalleOrderID</td>
+                                <td>@item.IdOrden</td>
+                                <td>@item.ProductoID</td>
+                                <td>@item.Cantidad</td>
+                                <td>@item.PrecioUnitario</td>
+                            </tr>
+                        
+                        }
+                </tbody>
+            </table>
 
+        }
+        else
+        {
+            <p>Error:@MessageGet</p>
+        }
+        </div>
+    
+    </body>
+    </html>
 @code {
+    public List<DetalleOrden>? listad { get; set; }
+    public string? MessageGet { get; set; }
+    protected async Task GetAllOrdersDetails()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens";
+            var response = await ServiciosDetalleOrden.GetDetalleOrden<List<DetalleOrden>>(url);
+            if(!response.Error)
+            {
+                listad = response.Response;
+                MessageGet = String.Empty;
+            }
+            else
+            {
+                listad = null;
+                MessageGet = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            listad = null;
+            MessageGet = "Error:" + e.Message;
+
+        }
+
+        
+    }
 
 }
