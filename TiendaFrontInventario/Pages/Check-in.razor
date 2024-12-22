@@ -106,7 +106,45 @@
             </div>
             <div class="Container2">
                 <button @onclick="LimpiarCampos">Limpiar Campos</button>
+                <button @onclick="MostrarFactura">Mostrar Factura</button>
+                @if(SuccessGetFactura!=false)
+                {
+                    <div class="Container3">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>OrderID</th>
+                                    <th>ProductID</th>
+                                    <th>ProductName</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Fac item in listaFactura)
+                                {
+                                    <tr>
+                                        <td>@item.OrderID</td>
+                                        <td>@item.ProductID</td>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice</td>
+                                        <td>@item.Totality</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                }
+                else
+                {
+                    <p>Error la lista esta vacia:@MessageFactura</p>
+                    
+                }
             </div>
+            <hr />
             <div class="container2">
                 <button @onclick="Finalizar">Finalizar Factura</button>
                 @if(SuccessPutOrder!=false)
@@ -283,15 +321,15 @@
     //Metodo para seleccionar el id o codigo del producto en el cual se encuentra parado el usuario
     public int CodigoSeleccionado { get; set; }
     public decimal PrecioUnitario { get; set; }
+    public string? ProductName { get; set; }
+    public decimal Total { get; set; }
 
     protected void SelectProduct(Productos item)
     {
         CodigoSeleccionado = item.CodigoProducto;
         PrecioUnitario = item.PrecioVenta;
-
+        ProductName = item.NombreProducto;
     }
-
-
 
 
     //Metodo para agregar DetalleOrdenes
@@ -299,6 +337,9 @@
     public bool SuccessPostDT = false;
     public string? MessagePostDT { get; set; }
     public int Cantidad { get; set; }
+    //Lista para mostrar la factura
+    public List<Fac>? listaFactura { get; set; }
+    public Fac Factura { get; set; } = new Fac();
 
     protected async Task PostDetalleOrdenes()
     {
@@ -311,6 +352,14 @@
                 DTOrdenes.ProductoID = CodigoSeleccionado;
                 DTOrdenes.Cantidad = Cantidad;
                 DTOrdenes.PrecioUnitario = PrecioUnitario;
+                //Solo para poder capturar el total del precio a pagar por ese producto
+                Total = DTOrdenes.PrecioUnitario * DTOrdenes.Cantidad;
+
+                LlenarObjetoFactura();
+                listaFactura?.Add(Factura);
+
+                //Agregar el objeto factura a la lista factura para que este se vaya agregando a la tabla de factura
+
                 try
                 {
                     string url = "https://localhost:7263/api/DetalleOrdens";
@@ -417,12 +466,10 @@
         CodigoSeleccionado = 0;
         Cantidad = 0;
         PrecioUnitario = 0;
-        SuccessPostDT = false;
+        // SuccessPostDT = false;
         MessagePostDT = null;
-        SuccessPostOrders = false;
+        // SuccessPostOrders = false;
         MessagePostOrders = null;
-        listap = null;
-
 
     }
 
@@ -486,13 +533,19 @@
 
 
     //Metodo para poder procesar nuevos productos
-    
+
     protected async Task ProcesarNuevosProductos()
     {
         DTOrdenes.IdOrden = CodOrder;
         DTOrdenes.ProductoID = CodigoSeleccionado;
         DTOrdenes.Cantidad = Cantidad;
         DTOrdenes.PrecioUnitario = PrecioUnitario;
+        //Para capturar el total del producto a pagar de los demas
+        Total = DTOrdenes.PrecioUnitario * DTOrdenes.Cantidad;
+
+        LlenarObjetoFactura();
+        listaFactura?.Add(Factura);
+
         acumulado = acumulado + (DTOrdenes.PrecioUnitario * DTOrdenes.Cantidad);
         try
         {
@@ -517,6 +570,46 @@
             MessagePostDT = "Error:" + e.Message;
 
         }
-        
+
+    }
+
+    //Clase 
+    public class Fac()
+    {
+        public int OrderID { get; set; }
+        public int ProductID { get; set; }
+        public string? ProductName { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal Totality { get; set; }
+    }
+
+    //Metodo para llenar el objeto factura
+    public void LlenarObjetoFactura()
+    {
+        Factura.OrderID = CodOrder;
+        Factura.ProductID = CodigoSeleccionado;
+        Factura.ProductName = ProductName;
+        Factura.Quantity = Cantidad;
+        Factura.UnitPrice = PrecioUnitario;
+        Factura.Totality = Total;
+    }
+
+
+    //Metodo para comprobar que la lista de factura no esta vacia
+    public bool SuccessGetFactura = false;
+    public string? MessageFactura { get; set; }
+    public void MostrarFactura()
+    {
+        if(listaFactura!=null)
+        {
+            SuccessGetFactura = true;
+            MessageFactura = listaFactura.ToString();
+        }
+        else
+        {
+            SuccessGetFactura = false;
+
+        }
     }
 }
