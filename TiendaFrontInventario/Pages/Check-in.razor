@@ -13,16 +13,17 @@
         <h1 class="H1">Facturacion</h1>
 
         <div class="Container2">
-        <p>Que deseas hacer:</p>
-        <select id="Operacion" @bind="TipoOrden">
-            <option value="Compra">Compra</option>
-            <option value="Venta">Venta</option>
-        </select>
+        
         <button @onclick="IniciarFac">Iniciar Facturacion</button>
         @if (listaO != null)
         {
             <p>Codigo de Facturacion:@CodOrder</p>
             <p>Fecha de Facturacion:@Fecha</p>
+            <p>Que deseas hacer:</p>
+            <select id="Operacion" @bind="TipoOrden">
+                <option value="Compra">Compra</option>
+                <option value="Venta">Venta</option>
+            </select>
             <p>Lo que vas a hacer:@TipoOrden</p>
             <hr />
             <div class="Container2">
@@ -80,7 +81,7 @@
                         Precio unitario del Producto:
                         <input type="text" @bind="PrecioUnitario" readonly />
                     </p>
-                    <p>Total Comprado:@acumulado</p>
+                    <p class="contador">Total Comprado:@acumulado</p>
 
                     <button @onclick="PostDetalleOrdenes">Agregar Producto</button>
 
@@ -338,8 +339,10 @@
     public string? MessagePostDT { get; set; }
     public int Cantidad { get; set; }
     //Lista para mostrar la factura
-    public List<Fac>? listaFactura { get; set; }
-    public Fac Factura { get; set; } = new Fac();
+    public List<Fac>? listaFactura { get; set; } = new List<Fac>();
+    public Fac? Factura { get; set; } = new Fac(); /*De las 2 formas da lo mismo para mostrar la lista, sea con
+                                                   Constructor o no */
+
 
     protected async Task PostDetalleOrdenes()
     {
@@ -466,6 +469,8 @@
         CodigoSeleccionado = 0;
         Cantidad = 0;
         PrecioUnitario = 0;
+        ProductName = null;
+        Total = 0;
         // SuccessPostDT = false;
         MessagePostDT = null;
         // SuccessPostOrders = false;
@@ -574,25 +579,45 @@
     }
 
     //Clase 
-    public class Fac()
+    public class Fac
     {
+        // public Fac(int orderID, int productID, string productName, int quantity, decimal unitPrice, decimal totality)
+        // {
+        //     OrderID = orderID;
+        //     ProductID = productID;
+        //     ProductName = productName;
+        //     Quantity = quantity;
+        //     UnitPrice = unitPrice;
+        //     Totality = totality;
+        // }
+
+        /*Para crear el objeto factura, sea con constructor o no*/
+
         public int OrderID { get; set; }
         public int ProductID { get; set; }
         public string? ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-        public decimal Totality { get; set; }
+        public decimal Totality { get; set; }  
     }
 
     //Metodo para llenar el objeto factura
     public void LlenarObjetoFactura()
     {
-        Factura.OrderID = CodOrder;
-        Factura.ProductID = CodigoSeleccionado;
-        Factura.ProductName = ProductName;
-        Factura.Quantity = Cantidad;
-        Factura.UnitPrice = PrecioUnitario;
-        Factura.Totality = Total;
+        Factura = new Fac
+        {
+                OrderID=CodOrder,
+                ProductID=CodigoSeleccionado,
+                ProductName=ProductName,
+                Quantity=Cantidad,
+                UnitPrice=PrecioUnitario,
+                Totality=Total
+        };
+
+        // Factura = new Fac(CodOrder, CodigoSeleccionado, ProductName, Cantidad,PrecioUnitario, Total);
+
+
+        /*De las 2 formas sirve para crear el objeto, pero de la primera, no se puede poner constructor*/
     }
 
 

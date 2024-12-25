@@ -44,10 +44,67 @@
             <p>Error:@MessageGet</p>
         }
         </div>
+        <hr />
+        <div class="Container2">
+            <h1>Search one register of orders details</h1>
+            <p>
+                Write the Orders Detail´s code:a
+                <input type="text" @bind="CodOrderDetail" required />
+            </p>
+            <button @onclick="GetOrderDetails">Find me</button>
+            @if(OrderDetail!=null)
+            {
+               <table>
+                   <thead>
+                       <tr>
+                           <th>OrderDetailID</th>
+                           <th>OrderID</th>
+                           <th>ProductID</th>
+                           <th>Quantity</th>
+                           <th>UnitPrice</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       <tr>
+                           <td>@OrderDetail.DetalleOrderID</td>
+                           <td>@OrderDetail.IdOrden</td>
+                           <td>@OrderDetail.ProductoID</td>
+                           <td>@OrderDetail.Cantidad</td>
+                           <td>@OrderDetail.PrecioUnitario</td>
+                       </tr>
+                   </tbody>
+            </table>
+
+        }
+        else
+        {
+            <p>Error:@MessageGetOrderDetail</p>
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+            <h1>Delete of register from Orders Detail</h1>
+            <p>
+                Write de Orders detail´s code:a
+                <input type="text" @bind="CodDelete" required />
+            </p>
+            <button @onclick="DeleteOrderDetail">Delete me</button>
+            @if(SuccessDelete!=false)
+            {
+                <p>Success Delete</p>
+            
+            }
+            else
+            {
+                <p>Error:@MessageDelete</p>
+            }
+        </div>
+
     
     </body>
     </html>
 @code {
+
     public List<DetalleOrden>? listad { get; set; }
     public string? MessageGet { get; set; }
     protected async Task GetAllOrdersDetails()
@@ -74,7 +131,68 @@
 
         }
 
-        
+
     }
+
+
+    public DetalleOrden? OrderDetail { get; set; }
+    public int CodOrderDetail { get; set; }
+    public string? MessageGetOrderDetail { get; set; }
+    protected async Task GetOrderDetails()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens/"+CodOrderDetail;
+            var response = await ServiciosDetalleOrden.GetDetalleOrden<DetalleOrden>(url);
+            if(!response.Error)
+            {
+                OrderDetail = response.Response;
+                MessageGetOrderDetail = String.Empty;
+            }
+            else
+            {
+                OrderDetail = null;
+                MessageGetOrderDetail = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            OrderDetail = null;
+            MessageGetOrderDetail = "Error:" + e.Message;
+
+        }
+
+    }
+
+    public int CodDelete { get; set; }
+    public bool SuccessDelete = false;
+    public string? MessageDelete { get; set; }
+    protected async Task DeleteOrderDetail()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens/" + CodDelete;
+            var response = await ServiciosDetalleOrden.DeleteDetalleOrden(url);
+            if(!response.Error)
+            {
+                SuccessDelete = true;
+                MessageDelete = String.Empty;
+            }
+            else
+            {
+                SuccessDelete = false;
+                MessageDelete = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessDelete = false;
+            MessageDelete = "Error:" + e.Message;
+
+        }
+
+    }
+
+
 
 }

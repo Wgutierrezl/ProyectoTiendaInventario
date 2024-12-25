@@ -283,3 +283,8 @@ main {
     margin-left: 240px;
     padding: 20px;
 }
+
+.contador{
+    font-size:35px;
+    color:black;
+}
