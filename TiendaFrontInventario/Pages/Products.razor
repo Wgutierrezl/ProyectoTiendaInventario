@@ -217,6 +217,44 @@
             <p>Error:@MessagePutGet</p>
         }
     </div>
+    <hr />
+    <div class="Container2">
+        <h1>Add more mercancy for the products</h1>
+        <p>
+            Write the Product´s code:
+            <input type="text" @bind="IdProduct" required />
+        </p>
+        <button @onclick="GetMercancyOfProducts">Find me</button>
+        @if(ProductStock!=null)
+        {
+            <p>Product Found</p>
+            <div class="container3">
+                <h2>Product Name:@ProductStock.NombreProducto</h2>
+                <p>Quantity now:@ProductStock.Stock</p>
+
+                <p>
+                    Writhe the new Quantity that you want to add for this product:
+                    <input type="text" @bind="NewQuantity" required />
+                </p>
+                <button @onclick="PutMercancyOfProducts">Add Stock</button>
+                @if(SuccessQuantity!=false)
+                {
+                    <p>Success update for Product´s mercancy</p>
+                    <p>That´s the new Mercancy:@NewStock</p>
+                }
+                else
+                {
+                    <p>Error:@MessageQuantityPut</p>
+                }
+
+            </div>
+        }
+        else
+        {
+            <p>Error:@MessageGetQuantity</p>
+        }
+
+    </div>
     </body>
     </html>
 
@@ -407,6 +445,73 @@
             MessagePut = "Error:" + e.Message;
 
         }
+
+    }
+
+
+    //Metodo para agregar o actualizar la mercancia de un producto, osea el stock
+    public int IdProduct { get; set; }
+    public Productos? ProductStock { get; set; }
+    public string? MessageGetQuantity { get; set; }
+
+    protected async Task GetMercancyOfProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos/" + IdProduct;
+            var response = await ServiciosProductos.GetProductos<Productos>(url);
+            if (!response.Error)
+            {
+                ProductStock = response.Response;
+                MessageGetQuantity = String.Empty;
+
+            }
+            else
+            {
+                ProductStock = null;
+                MessageGetQuantity = await response.GetErrorMessageAsync();
+            }
+
+        }
+        catch (Exception e)
+        {
+            ProductStock = null;
+            MessageGetQuantity = "Error:" + e.Message;
+
+        }
+
+
+    }
+    public int NewQuantity { get; set; }
+    public bool SuccessQuantity = false;
+    public string? MessageQuantityPut { get; set; }
+    public int NewStock { get; set; }
+
+    protected async Task PutMercancyOfProducts()
+    { 
+            try
+            {
+                NewStock = NewQuantity + ProductStock.Stock;
+                ProductStock.Stock = NewStock;
+                string url = "https://localhost:7263/api/Productos/" + IdProduct;
+                var response = await ServiciosProductos.PutProductos<Productos>(url, ProductStock);
+                if(!response.Error)
+                {
+                    SuccessQuantity = true;
+                    MessageQuantityPut = String.Empty;
+                }
+                else
+                {
+                    SuccessQuantity = false;
+                    MessageQuantityPut = await response.GetErrorMessageAsync();
+                }
+
+            }catch (Exception e)
+            {
+                SuccessQuantity = false;
+                MessageQuantityPut = "Error:" + e.Message;
+
+            }
 
     }
 }
