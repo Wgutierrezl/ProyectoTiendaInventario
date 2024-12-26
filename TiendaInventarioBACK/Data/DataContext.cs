@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 using TiendaInventarioController.Entidades;
 namespace TiendaInventarioBACK.Data
 {
@@ -17,6 +18,8 @@ namespace TiendaInventarioBACK.Data
         {
             base.OnModelCreating(modelBuilder);
             //modelBuilder.Entity<Tipo>().HasIndex(c => c.Name).IsUnique();
+            modelBuilder.Entity<DetalleOrden>()
+           .ToTable(tb => tb.UseSqlOutputClause(false));
         }
 
     }

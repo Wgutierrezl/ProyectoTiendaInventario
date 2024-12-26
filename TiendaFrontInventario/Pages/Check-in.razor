@@ -341,7 +341,7 @@
     //Lista para mostrar la factura
     public List<Fac>? listaFactura { get; set; } = new List<Fac>();
     public Fac? Factura { get; set; } = new Fac(); /*De las 2 formas da lo mismo para mostrar la lista, sea con
-                                                   Constructor o no */
+                                               Constructor o no */
 
 
     protected async Task PostDetalleOrdenes()
@@ -471,6 +471,7 @@
         PrecioUnitario = 0;
         ProductName = null;
         Total = 0;
+        listap = null;
         // SuccessPostDT = false;
         MessagePostDT = null;
         // SuccessPostOrders = false;
