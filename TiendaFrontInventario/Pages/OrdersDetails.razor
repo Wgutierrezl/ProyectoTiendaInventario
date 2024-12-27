@@ -99,8 +99,59 @@
                 <p>Error:@MessageDelete</p>
             }
         </div>
+        <hr />
+        <div class="Container2">
+            <h1>Found the Order Detail to modify</h1>
+            <p>
+                Write the Order Detail´s code:
+                <input type="text" @bind="CodPutOrderDetail" required />
+            </p>
+            <button @onclick="GetPutOrderDetail">Find me</button>
+            @if(OrderDetailGet!=null)
+            {
+                <p>Order detail found</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OrderDetailID</th>
+                            <th>OrderID</th>
+                            <th>ProductID</th>
+                            <th>Quantity</th>
+                            <th>UnitPrice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@OrderDetailGet.DetalleOrderID</td>
+                            <td>@OrderDetailGet.IdOrden</td>
+                            <td>@OrderDetailGet.ProductoID</td>
+                            <td>@OrderDetailGet.Cantidad</td>
+                            <td>@OrderDetailGet.PrecioUnitario</td>
+                        </tr>
+                    </tbody>
+            </table>
+            <hr />
+            <div class="container3">
+                <h2>Modify the Quantity´s Product:
+                    <input type="text" @bind="OrderDetailGet.Cantidad" />
+                </h2>
+                <button @onclick="PutOrderDetail">Modify me</button>
+                @if(SuccessPut!=false)
+                {
+                    <h2>Success Edit of Quantity</h2>
+                }
+                else
+                {
+                    <h2>Error:@MessagePut</h2>
+                }
+                </div>
+        }
+        else
+        {
+            <p>Error:@MessageGetPutOrderDetail</p>
+        }
+        </div>
 
-    
     </body>
     </html>
 @code {
@@ -188,6 +239,64 @@
         {
             SuccessDelete = false;
             MessageDelete = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo put para modifcar la Cantidad de una orden
+    public DetalleOrden? OrderDetailGet { get; set; }
+    public int CodPutOrderDetail { get; set; }
+    public string? MessageGetPutOrderDetail { get; set; }
+    protected async Task GetPutOrderDetail()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens/" + CodPutOrderDetail;
+            var response = await ServiciosDetalleOrden.GetDetalleOrden<DetalleOrden>(url);
+            if(!response.Error)
+            {
+                OrderDetailGet = response.Response;
+                MessageGetPutOrderDetail = String.Empty;
+            }
+            else
+            {
+                OrderDetailGet = null;
+                MessageGetPutOrderDetail = await response.GetErrorMessageAsync();
+            }
+
+        }catch(Exception e)
+        {
+            OrderDetailGet = null;
+            MessageGetPutOrderDetail = "Error:" + e.Message;
+
+        }
+
+    }
+
+    public bool SuccessPut = false;
+    public string? MessagePut { get; set; }
+    protected async Task PutOrderDetail()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/DetalleOrdens/" + CodPutOrderDetail;
+            var response = await ServiciosDetalleOrden.PutDetalleOrden<DetalleOrden>(url, OrderDetailGet);
+            if(!response.Error)
+            {
+                SuccessPut = true;
+                MessagePut = String.Empty;
+            }
+            else
+            {
+                SuccessPut = false;
+                MessagePut = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            SuccessPut = false;
+            MessagePut = "Error:" + e.Message;
 
         }
 
