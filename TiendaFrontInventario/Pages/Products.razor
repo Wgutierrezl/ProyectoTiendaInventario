@@ -1,5 +1,7 @@
 ﻿@page "/Products"
 @inject IServiciosProductos ServiciosProductos
+@inject IServiciosCategorias ServiciosCategorias
+@inject IServiciosProveedores ServiciosProveedores
 
 <!DOCTYPE html>
     <html>
@@ -102,7 +104,7 @@
         </div>
         <hr />
         <div class="Container2">
-             <form>
+             
             <h1>Insert of Products into de System</h1>
             <p>
                 Write the Product´s Name:
@@ -113,13 +115,90 @@
                 <input type="text" @bind="ProductPost.Descripcion" required />
             </p>
             <p>
-                Write the Product´s CategoryID:
-                <input type="text" @bind="ProductPost.CategoriaID" required />
+                Select the Product´s CategoryID:
             </p>
+            <button @onclick="ListCategories">Select the Category</button>
+            @if (Listac != null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CategoryID</th>
+                            <th>CategoryName</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(Categorias item in Listac)
+                        {
+                            <tr @onclick="() => SelectCategoryID(item)">
+                                <td>@item.CodigoCategoria</td>
+                                <td>@item.NombreCategoria</td>
+                                <td>@item.Descripcion</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @if(CategoryID!=null)
+                {
+                    <p>Category´s code Selected:@CategoryID</p>
+                    ProductPost.CategoriaID=CategoryID;
+                }
+                else
+                {
+                    <p>No se ha seleccionado nada</p>
+                }
+
+            }
+            else
+            {
+                <p>Error:@MessageListCategories</p>
+
+            }
+
             <p>
-                Write the Product´s SupplierID:
-                <input type="text" @bind="ProductPost.ProveedorID" required />
+                Select the Product´s SupplierID:
             </p>
+            <button @onclick="ListSuppliers">Select</button>
+            @if(listaPro!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SupplierID</th>
+                            <th>SupplierName</th>
+                            <th>SupplierPhone</th>
+                            <th>SupplierEmail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(Proveedores item in listaPro)
+                        {
+                            <tr @onclick="() => SelectSupplierID(item)">
+                                <td>@item.CodigoProveedor</td>
+                                <td>@item.NombreProveedor</td>
+                                <td>@item.Telefono</td>
+                                <td>@item.Email</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @if(SupplierID!=null)
+                {
+                    <p>Codigo de Proveedor seleccionado:@SupplierID</p>
+                    ProductPost.ProveedorID=SupplierID;
+            
+                }
+                else
+                {
+                    <p>Aun no se ha seleccionado nada</p>
+                }
+                
+            }
+            else
+            {
+                <p>Error:@MessageListSupliers</p>
+            }
             <p>
                 Write the Sales Price:
                 <input type="text" @bind="ProductPost.PrecioVenta" required />
@@ -141,8 +220,7 @@
             {
                 <p>Error:@MessagePost</p>
             }
-             </form>
-                  
+                
         </div>
 
         <div class="Container2">
@@ -233,7 +311,7 @@
                 <p>Quantity now:@ProductStock.Stock</p>
 
                 <p>
-                    Writhe the new Quantity that you want to add for this product:
+                    Write the new Quantity that you want to add for this product:
                     <input type="text" @bind="NewQuantity" required />
                 </p>
                 <button @onclick="PutMercancyOfProducts">Add Stock</button>
@@ -489,29 +567,100 @@
 
     protected async Task PutMercancyOfProducts()
     { 
-            try
+        try
+        {
+            NewStock = NewQuantity + ProductStock.Stock;
+            ProductStock.Stock = NewStock;
+            string url = "https://localhost:7263/api/Productos/" + IdProduct;
+            var response = await ServiciosProductos.PutProductos<Productos>(url, ProductStock);
+            if(!response.Error)
             {
-                NewStock = NewQuantity + ProductStock.Stock;
-                ProductStock.Stock = NewStock;
-                string url = "https://localhost:7263/api/Productos/" + IdProduct;
-                var response = await ServiciosProductos.PutProductos<Productos>(url, ProductStock);
-                if(!response.Error)
-                {
-                    SuccessQuantity = true;
-                    MessageQuantityPut = String.Empty;
-                }
-                else
-                {
-                    SuccessQuantity = false;
-                    MessageQuantityPut = await response.GetErrorMessageAsync();
-                }
-
-            }catch (Exception e)
+                SuccessQuantity = true;
+                MessageQuantityPut = String.Empty;
+            }
+            else
             {
                 SuccessQuantity = false;
-                MessageQuantityPut = "Error:" + e.Message;
-
+                MessageQuantityPut = await response.GetErrorMessageAsync();
             }
 
+        }catch (Exception e)
+        {
+            SuccessQuantity = false;
+            MessageQuantityPut = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo para traer una lista de Categorias para seleccionar
+    public List<Categorias>? Listac { get; set; }
+    public string? MessageListCategories { get; set; }
+
+    protected async Task ListCategories()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias";
+            var response = await ServiciosCategorias.GetCategorias<List<Categorias>>(url);
+            if(!response.Error)
+            {
+                Listac = response.Response;
+                MessageListCategories = String.Empty;
+            }
+            else
+            {
+                Listac = null;
+                MessageListCategories = await response.GetErrorMessageAsync();
+            }
+
+
+        }catch (Exception e)
+        {
+            Listac = null;
+            MessageListCategories = "Error:" + e.Message;
+
+        }
+    }
+
+    public int CategoryID { get; set; }
+    public void SelectCategoryID(Categorias item)
+    {
+        CategoryID = item.CodigoCategoria;
+
+    }
+
+
+    public int SupplierID { get; set; }
+    public void SelectSupplierID(Proveedores item)
+    {
+        SupplierID = item.CodigoProveedor;
+
+    }
+
+    public List<Proveedores>? listaPro { get; set; }
+    public string? MessageListSupliers { get; set; }
+    protected async Task ListSuppliers()
+    {
+        try{
+            string url = "https://localhost:7263/api/Proveedores";
+            var response = await ServiciosProveedores.GetProveedores<List<Proveedores>>(url);
+            if(!response.Error)
+            {
+                listaPro = response.Response;
+                MessageListSupliers = String.Empty;
+            }
+            else
+            {
+                listaPro = null;
+                MessageListSupliers = await response.GetErrorMessageAsync();
+            }
+
+        }catch(Exception e)
+        {
+            listaPro = null;
+            MessageListSupliers = "Error:" + e.Message;
+
+        }
     }
 }
