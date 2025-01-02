@@ -41,9 +41,10 @@
         }
         else
         {
-            <p style="color:red">Error:@MessageGetAll</p>
+            <p>Error:@MessageGetAll</p>
         }
     </div>
+    <hr />
 
     <div class="Container2">
         <h1>Busqueda de Proveedores</h1>
@@ -55,16 +56,36 @@
         @if(ProveedorGet!=null)
         {
             <p>Supplier Found</p>
-            <p>ID:@ProveedorGet.CodigoProveedor</p>
+            @* <p>ID:@ProveedorGet.CodigoProveedor</p>
             <p>Supplier Name:@ProveedorGet.NombreProveedor</p>
             <p>@ProveedorGet.Telefono</p>
-            <p>@ProveedorGet.Email</p>
+            <p>@ProveedorGet.Email</p> *@
+            <table>
+                <thead>
+                    <tr>
+                        <th>CodigoProveedor</th>
+                        <th>NombreProveedor</th>
+                        <th>Telefono</th>
+                        <th>Email</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                        <tr>
+                            <td>@ProveedorGet.CodigoProveedor</td>
+                            <td>@ProveedorGet.NombreProveedor</td>
+                            <td>@ProveedorGet.Telefono</td>
+                            <td>@ProveedorGet.Email</td>
+                        </tr>
+                </tbody>
+            </table>
         }
         else
         {
-            <p style="color:red">Error:@MessageGetFiltrated</p>
+            <p>Error:@MessageGetFiltrated</p>
         }
     </div>
+    <hr />
 
     <div class="Container2">
         <h1>Delete Suppliers</h1>
@@ -82,6 +103,7 @@
             <p>Error:@MessageDelete</p>
         }
     </div>
+    <hr />
 
     <div class="Container2">
         <h1>Post Suppliers</h1>
@@ -108,6 +130,7 @@
             <p>Error:@MessagePost</p>
         }
     </div>
+    <hr />
 
     <div class="Container2">
         <h1>Put Suppliers</h1>

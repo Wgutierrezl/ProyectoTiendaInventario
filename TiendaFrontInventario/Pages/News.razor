@@ -11,10 +11,254 @@
     </head>
     <body>
         <h1 class="H1">News</h1>
-    
+        <div class="Container2">
+            <h1>Ventas generadas de cada Mes</h1>
+            <p> 
+                Digite el Año que desea saber:
+                <input type="text" @bind="Año" required />
+            </p>
+            <button @onclick="GetOrdersSales">Buscar Ventas</button>
+            @if(ListO!=null)
+            {
+                <h2>Ventas Encontradas</h2>
+                <p>Ventas Totales durante el año:@Año</p>
+            <hr />
+            if(MonthlySales.Count>0)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sales in MonthlySales)
+                        {
+                            <tr>
+                                <td>@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(sales.Key)</td>
+                                <td>@sales.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No hay ventas para el Año:@Año</p>
+            }
+            @* <p>Enero:@Januery</p>
+                <p>Febrero:@February</p>
+                <p>Marzo:@March</p>
+                <p>Abril:@April</p>
+                <p>Mayo:@May</p>
+                <p>Junio:@June</p>
+                <p>Julio:@July</p>
+                <p>Agosto:@August</p>
+                <p>Septiembre:@September</p>
+                <p>Octubre:@October</p>
+                <p>Noviembre:@November</p>
+                <p>Diciembre:@December</p> *@
+                
+        }
+        else
+        {
+            <p>Error:@MessageGetOrders</p>
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+            <h1>Productos con poca Mercancia</h1>
+            <button @onclick="GetProducts">Traerlos</button>
+            @if(ListaP!=null)
+            {
+                <p>Productos Encontrados</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ProductID</th>
+                            <th>ProductName</th>
+                            <th>Description</th>
+                            <th>PurchasePrice</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Productos item in ListaP)
+                        {
+                            if(item.Stock<10)
+                            {
+                                <tr>
+                                    <td>@item.CodigoProducto</td>
+                                    <td>@item.NombreProducto</td>
+                                    <td>@item.Descripcion</td>
+                                    <td>@item.PrecioVenta</td>
+                                    <td>@item.Stock</td>
+                                </tr>
+                            }
+                        }
+                </tbody>
+            </table>
+        }
+        else
+        {
+           <p>Error:@MessageGetproducts</p> 
+        }
+        </div>
+
     </body>
     </html>
 
 @code {
+    //Traer todas las ventas generadas
+    public List<Ordenes>? ListO { get; set; }
+    public string? MessageGetOrders { get; set; }
+    protected async Task GetOrdersSales()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Ordenes";
+            var response = await ServiciosOrdenes.GetOrdenes<List<Ordenes>>(url);
+            if(!response.Error)
+            {
+                ListO = response.Response;
+                MessageGetOrders = String.Empty;
+                MonthSales();
+            }
+            else
+            {
+                ListO = null;
+                MonthlySales.Clear();
+                MessageGetOrders = await response.GetErrorMessageAsync();
+            }
+
+
+        }catch (Exception e)
+        {
+            ListO = null;
+            MessageGetOrders = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Para poder calcular el total vendido en cada mes
+
+    // public decimal Januery = 0;
+    // public decimal February = 0;
+    // public decimal March = 0;
+    // public decimal April = 0;
+    // public decimal May = 0;
+    // public decimal June = 0;
+    // public decimal July = 0;
+    // public decimal August = 0;
+    // public decimal September = 0;
+    // public decimal October = 0;
+    // public decimal November = 0;
+    // public decimal December = 0;
+
+
+    public Dictionary<int, decimal> MonthlySales { get; set; } = new Dictionary<int, decimal>();
+    public int Año { get; set; }
+    public void MonthSales()
+    {
+        MonthlySales.Clear();
+
+        // foreach(Ordenes item in ListO)
+        // {
+        //     mes = item.FechaOrden.Month;
+        //     switch(mes)
+        //     {
+        //         case 1:
+        //             Januery = Januery + item.Total;
+        //             break;
+
+        //         case 2:
+        //             February = February + item.Total;
+        //             break;
+        //         case 3:
+        //             March = March + item.Total;
+        //             break;
+        //         case 4:
+        //             April = April + item.Total;
+        //             break;
+        //         case 5:
+        //             May = May + item.Total;
+        //             break;
+        //         case 6:
+        //             June = June + item.Total;
+        //             break;
+        //         case 7:
+        //             July = July + item.Total;
+        //             break;
+        //         case 8:
+        //             August = August + item.Total;
+        //             break;
+        //         case 9:
+        //             September = September + item.Total;
+        //             break;
+        //         case 10:
+        //             October = October + item.Total;
+        //             break;
+        //         case 11:
+        //             November = November + item.Total;
+        //             break;
+        //         case 12:
+        //             December = December + item.Total;
+        //             break;
+        //     }
+
+        // }
+
+        foreach(Ordenes item in ListO ?? Enumerable.Empty<Ordenes>())
+        {
+            int mes = item.FechaOrden.Month;
+            int Year = item.FechaOrden.Year;
+            if(Año.Equals(Year))
+            {
+                if (MonthlySales.ContainsKey(mes))
+                {
+                    MonthlySales[mes] += item.Total;
+                }
+                else
+                {
+                    MonthlySales[mes] = item.Total;
+                }
+
+            }
+
+        }
+
+    }
+
+
+    //Metodo para traer los productos
+    public List<Productos>? ListaP { get; set; }
+    public string? MessageGetproducts { get; set; }
+    protected async Task GetProducts()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Productos";
+            var response = await ServiciosProductos.GetProductos<List<Productos>>(url);
+            if(!response.Error)
+            {
+                ListaP = response.Response;
+                MessageGetproducts = String.Empty;
+            }
+            else
+            {
+                ListaP = null;
+                MessageGetproducts = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            ListaP = null;
+            MessageGetproducts = "Error:" + e.Message;
+
+        }
+
+    }
 
 }

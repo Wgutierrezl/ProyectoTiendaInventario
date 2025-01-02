@@ -50,15 +50,30 @@
                  @if(Category!=null)
                  {
                      <p>Category found</p>
-                     <p>Category´s ID: @Category.CodigoCategoria</p>
+                     @* <p>Category´s ID: @Category.CodigoCategoria</p>
                      <p>Category´s Name: @Category.NombreCategoria </p>
-            <p>Category´s Description: @Category.Descripcion</p>
-
-        }
-        else
-        {
-            <p>Error:@MessageGetFil</p>
-        }
+                     <p>Category´s Description: @Category.Descripcion</p> *@
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>CategoryID</th>
+                                    <th>CategoryName</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                        <tr>
+                                            <td>@Category.CodigoCategoria</td>
+                                            <td>@Category.NombreCategoria</td>
+                                            <td>@Category.Descripcion</td>
+                                        </tr>
+                                </tbody>
+                         </table>
+                 }
+                else
+                {
+                    <p>Error:@MessageGetFil</p>
+                }
     </div>
     <hr />
 
