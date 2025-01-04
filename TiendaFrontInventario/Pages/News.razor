@@ -2,6 +2,7 @@
 @inject IServiciosOrdenes ServiciosOrdenes
 @inject IServiciosDetalleOrden ServiciosDetalleOrden
 @inject IServiciosProductos ServiciosProductos
+@inject IServiciosCategorias ServiciosCategorias
 
 <!DOCTYPE html>
     <html>
@@ -103,6 +104,75 @@
         else
         {
            <p>Error:@MessageGetproducts</p> 
+        }
+        </div>
+        <hr />
+        <div class="Container2">
+            <h1>Filtrar productos por Categoria</h1>
+            <button @onclick="GetCategories">Mostrar Categorias</button>
+            @if(ListaC!=null)
+            {
+                <p>Categorias encontradas</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CategoryID</th>
+                            <th>CategoryName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(Categorias item in ListaC)
+                        {
+                            <tr @onclick="() => CodigoCategoria(item)">
+                                <td>@item.CodigoCategoria</td>
+                                <td>@item.NombreCategoria</td>
+                            </tr>
+                        }
+                </tbody>
+            </table>
+            @if(CategoryID!=null)
+            {
+                <p>Codigo de Categoria seleccionado:@CategoryID</p>
+            }
+            else
+            {
+                <p>No se ha escogido la categoria</p>
+            }
+
+            <button @onclick="GetProductsCategories">Filtrarlos</button>
+            @if(ListaP2!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ProductID</th>
+                            <th>ProductName</th>
+                            <th>Description</th>
+                            <th>PurchasePrice</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(Productos item in ListaP2)
+                        {
+                            if(item.CategoriaID.Equals(CategoryID))
+                            {
+                                <tr>
+                                    <td>@item.CodigoProducto</td>
+                                    <td>@item.NombreProducto</td>
+                                    <td>@item.Descripcion</td>
+                                    <td>@item.PrecioVenta</td>
+                                    <td>@item.Stock</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+        else
+        {
+            <p>Error:@MessageCategories</p>
         }
         </div>
 
@@ -256,6 +326,70 @@
         {
             ListaP = null;
             MessageGetproducts = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo para filtrar productos de una categoria
+    public List<Categorias>? ListaC { get; set; }
+    public string? MessageCategories { get; set; }
+    protected async Task GetCategories()
+    {
+        try
+        {
+            string url = "https://localhost:7263/api/Categorias";
+            var response = await ServiciosCategorias.GetCategorias<List<Categorias>>(url);
+            if(!response.Error)
+            {
+                ListaC = response.Response;
+                MessageCategories = String.Empty;
+            }
+            else
+            {
+                ListaC = null;
+                MessageCategories = await response.GetErrorMessageAsync();
+            }
+
+        }catch (Exception e)
+        {
+            ListaC = null;
+            MessageCategories = "Error:" + e.Message;
+
+        }
+
+    }
+
+    //Metodo para escoger el codigod de categoria
+    public int CategoryID { get; set; }
+    public void CodigoCategoria(Categorias Category)
+    {
+        CategoryID = Category.CodigoCategoria;
+
+    }
+
+    public List<Productos>? ListaP2 { get; set; }
+    public string? MessageProducts2 { get; set; }
+    protected async Task GetProductsCategories()
+    {
+        try{
+            string url = "https://localhost:7263/api/Productos";
+            var response = await ServiciosProductos.GetProductos<List<Productos>>(url);
+            if (!response.Error)
+            {
+                ListaP2 = response.Response;
+                MessageProducts2 = String.Empty;
+            }
+            else
+            {
+                ListaP2 = null;
+                MessageProducts2 = await response.GetErrorMessageAsync();
+            }
+
+        }catch(Exception e)
+        {
+            ListaP2 = null;
+            MessageProducts2 = "Error:" + e.Message;
 
         }
 
